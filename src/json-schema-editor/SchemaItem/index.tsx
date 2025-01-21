@@ -405,7 +405,7 @@ function SchemaItem(props: SchemaItemProps) {
                   <Button
                     size="icon"
                     onClick={() => setImportModal(true)}
-                    disabled
+                    disabled={false}
                   >
                     <FileJson2 className="size-4" />
                   </Button>
