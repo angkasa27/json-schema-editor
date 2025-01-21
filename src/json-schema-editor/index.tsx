@@ -1,9 +1,9 @@
-import { message } from "antd";
 import _ from "lodash";
 import { forwardRef, useImperativeHandle, useState } from "react";
 import SchemaItem from "./SchemaItem";
 import { JSONSchema7, SchemaEditorProps } from "./types";
 import { DEFAULT_JSON_SCHEMA, getDefaultSchema, inferSchema } from "./utils";
+import { toast } from "sonner";
 import { useControllableState } from "@/hooks/use-controllable-state";
 
 export interface JsonSchemaEditorHandle {
@@ -13,8 +13,6 @@ export interface JsonSchemaEditorHandle {
 // eslint-disable-next-line react/display-name
 const JsonSchemaEditor = forwardRef<JsonSchemaEditorHandle, SchemaEditorProps>(
   (props, ref) => {
-    const [messageApi, contextHolder] = message.useMessage();
-
     function initSchema(data: string | undefined | JSONSchema7): JSONSchema7 {
       if (!data) {
         return DEFAULT_JSON_SCHEMA;
@@ -24,9 +22,10 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorHandle, SchemaEditorProps>(
           try {
             return inferSchema(JSON.parse(data));
           } catch (e) {
-            messageApi.warning(
-              "初始化数据不是 Json 字符串，无法生成 JsonSchema"
-            );
+            toast.error("Not a valid JSON!", {
+              description:
+                "The initialization data is not a JSON string, JSON Schema cannot be generated.",
+            });
             return DEFAULT_JSON_SCHEMA;
           }
         case "object":
@@ -212,7 +211,6 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorHandle, SchemaEditorProps>(
 
     return (
       <div style={{ paddingTop: "10px 10px 0 10px" }}>
-        {contextHolder}
         <SchemaItem
           schema={schema!}
           changeSchema={changeSchema}
