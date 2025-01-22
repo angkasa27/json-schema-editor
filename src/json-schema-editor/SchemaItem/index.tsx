@@ -1,8 +1,6 @@
-import { Form } from "antd";
 import { Draft07 } from "json-schema-library";
 import _ from "lodash";
-import { useCallback, useEffect, useRef, useState } from "react";
-// import MonacoEditor from "../MonacoEditor";
+import { useCallback, useEffect, useState } from "react";
 import { JSONSchema7, JSONSchema7TypeName } from "../types";
 import {
   getDefaultSchema,
@@ -10,8 +8,6 @@ import {
   parseJsonStr,
   resolveJsonSchemaRef,
   SchemaTypeOptions,
-  SchemaTypes,
-  StringFormat,
 } from "../utils";
 import {
   ChevronDown,
@@ -20,13 +16,11 @@ import {
   Plus,
   Settings,
   Trash2,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
@@ -54,6 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeMirrorJson } from "@/components/ui/code-mirror-json";
+import { DialogAdvancedSettings } from "./dialog-advanced-settings";
 
 type SchemaItemProps = {
   propertyName?: string;
@@ -84,7 +79,6 @@ type SchemaItemProps = {
 };
 
 function SchemaItem(props: SchemaItemProps) {
-  const [advancedForm] = Form.useForm();
   const {
     changeSchema,
     renameProperty,
@@ -115,13 +109,6 @@ function SchemaItem(props: SchemaItemProps) {
   const [importModal, setImportModal] = useState(false);
   const [importType, setImportType] = useState<"json" | "json-schema">("json");
   const [importValue, setImportValue] = useState<string | undefined>();
-  const [isObject, setIsObject] = useState(false);
-  const [isArray, setIsArray] = useState(false);
-  const [isNumber, setIsNumber] = useState(false);
-  const [isBoolean, setIsBoolean] = useState(false);
-  const [isInteger, setIsInteger] = useState(false);
-  const [isString, setIsString] = useState(false);
-  const editorRef = useRef<any>(null);
   const isRoot = typeof propertyName === "undefined";
 
   useEffect(() => {
@@ -157,23 +144,6 @@ function SchemaItem(props: SchemaItemProps) {
     };
   }, [handleDebounce]);
 
-  useEffect(() => {
-    if (!advancedModal || !formSchema) {
-      return;
-    }
-    advancedForm.setFieldsValue(formSchema);
-    setIsObject(formSchema.type === "object");
-    setIsArray(formSchema.type === "array");
-    setIsNumber(formSchema.type === "number");
-    setIsBoolean(formSchema.type === "boolean");
-    setIsInteger(formSchema.type === "integer");
-    setIsString(formSchema.type === "string");
-  }, [advancedModal, formSchema]);
-
-  function handleEditorDidMount(editor: any) {
-    editorRef.current = editor;
-  }
-
   const schemaItems: any = schema.items;
   const addChildItems =
     !!(
@@ -196,7 +166,7 @@ function SchemaItem(props: SchemaItemProps) {
         <div className="shrink-0 w-10">
           {schema.type === "object" && (
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
@@ -239,7 +209,7 @@ function SchemaItem(props: SchemaItemProps) {
         </div>
         <div className="shrink-0 flex items-center">
           <Tooltip>
-            <TooltipTrigger className="flex items-center">
+            <TooltipTrigger asChild>
               <Checkbox
                 disabled={!!isArrayItems || !!isRoot}
                 checked={!!isRequire}
@@ -358,7 +328,7 @@ function SchemaItem(props: SchemaItemProps) {
           {(!isRoot && !isArrayItems) || schema.type === "object" ? (
             addChildItems ? (
               <DropdownMenu>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild>
                   <Button size="icon">
                     <Plus className="size-4" />
                   </Button>
@@ -478,362 +448,7 @@ function SchemaItem(props: SchemaItemProps) {
           handleAdvancedSettingClick={handleAdvancedSettingClick}
         />
       )}
-      <Dialog
-        open={advancedModal}
-        onOpenChange={(open) => setAdvancedModal(open)}
-      >
-        <DialogContent className="md:max-w-screen-md">
-          <DialogHeader>
-            <DialogTitle>Advance Settings</DialogTitle>
-          </DialogHeader>
-          <Form
-            form={advancedForm}
-            onValuesChange={(_, allValues) => {
-              if (editorRef.current) {
-                editorRef.current.setValue(
-                  JSON.stringify({ ...formSchema, ...allValues }, null, 2)
-                );
-              }
-            }}
-          >
-            <div className="grid grid-cols-6 gap-2">
-              {!isObject && SchemaTypes.indexOf(formSchema?.type) !== -1 && (
-                <div className="font-semibold col-span-6">Basic Settings</div>
-              )}
-              {(isString || isNumber || isInteger || isBoolean) && (
-                <>
-                  <p className="flex items-center justify-end">Default value</p>
-                  <div className="col-span-5">
-                    <Form.Item noStyle name={"default"}>
-                      {isString && (
-                        <Input
-                          style={{ width: "100%" }}
-                          placeholder={"Input default value"}
-                        />
-                      )}
-                      {(isNumber || isInteger) && (
-                        <Input
-                          type="number"
-                          style={{ width: "100%" }}
-                          placeholder={"Input default value"}
-                        />
-                      )}
-                      {isBoolean && (
-                        <Select
-                        // value={}
-                        // onValueChange={(val) => ...(val === 'true' ? true : false)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select default value" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value={"true"}>true</SelectItem>
-                            <SelectItem value={"false"}>false</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </Form.Item>
-                  </div>
-                </>
-              )}
-              {isString && (
-                <>
-                  <p className="flex items-center justify-end">Min Length</p>
-                  <div className="col-span-2">
-                    <Form.Item noStyle name={"minLength"}>
-                      <Input
-                        type="number"
-                        min={0}
-                        style={{ width: "100%" }}
-                        // parser={(value) =>
-                        //   value ? parseInt(value.replace(/\D/g, ""), 10) : ""
-                        // }
-                        // formatter={(value) =>
-                        //   value ? `${Math.floor(Math.max(value, 0))}` : ""
-                        // }
-                        placeholder={"Input min length"}
-                      />
-                    </Form.Item>
-                  </div>
-                  <p className="flex items-center justify-end">Max length</p>
-                  <div className="col-span-2">
-                    <Form.Item noStyle name={"maxLength"}>
-                      <Input
-                        type="number"
-                        min={0}
-                        style={{ width: "100%" }}
-                        // parser={(value) =>
-                        //   value ? parseInt(value.replace(/\D/g, ""), 10) : ""
-                        // }
-                        // formatter={(value) =>
-                        //   value ? `${Math.floor(Math.max(value, 0))}` : ""
-                        // }
-                        placeholder={"Input max length"}
-                      />
-                    </Form.Item>
-                  </div>
-                </>
-              )}
-              {(isNumber || isInteger) && (
-                <>
-                  <p className="flex items-center justify-end">Min value</p>
-                  <div className="col-span-2">
-                    <Form.Item noStyle name={"minimum"}>
-                      <Input
-                        type="number"
-                        style={{ width: "100%" }}
-                        placeholder={"Input min value"}
-                      />
-                    </Form.Item>
-                  </div>
-                  <p className="flex items-center justify-end">Max value</p>
-                  <div className="col-span-2">
-                    <Form.Item noStyle name={"maximum"}>
-                      <Input
-                        type="number"
-                        style={{ width: "100%" }}
-                        placeholder={"Input max value"}
-                      />
-                    </Form.Item>
-                  </div>
-                  <p className="flex items-center justify-end">Exclusive Min</p>
-                  <div className="col-span-2">
-                    <Form.Item noStyle name={"exclusiveMinimum"}>
-                      <Input
-                        type="number"
-                        style={{ width: "100%" }}
-                        placeholder={"Input exclusive min value"}
-                      />
-                    </Form.Item>
-                  </div>
-                  <p className="flex items-center justify-end">Exclusive Max</p>
-                  <div className="col-span-2">
-                    <Form.Item noStyle name={"exclusiveMaximum"}>
-                      <Input
-                        type="number"
-                        style={{ width: "100%" }}
-                        placeholder={"Input exclusive max value"}
-                      />
-                    </Form.Item>
-                  </div>
-                </>
-              )}
-              {isString && (
-                <>
-                  <p className="flex items-center justify-end">Regex pattern</p>
-                  <div className="col-span-5">
-                    <Form.Item noStyle name={"pattern"}>
-                      <Input placeholder={"Input regex pattern"} />
-                    </Form.Item>
-                  </div>
 
-                  <p className="flex items-center justify-end">Format</p>
-                  <div className="col-span-2 flex gap-2">
-                    <Form.Item noStyle name={"format"}>
-                      {/* <Select
-                      allowClear
-                      options={StringFormat}
-                      placeholder={"Input format"}
-                      style={{ width: "100%" }}
-                    /> */}
-                      <Select
-                        value={""}
-                        onValueChange={(val) => console.log(val)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Input Format" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {StringFormat.map((format) => (
-                            <SelectItem key={format.value} value={format.value}>
-                              {format.value}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="shrink-0"
-                      >
-                        <X className="size-4" />
-                      </Button>
-                    </Form.Item>
-                  </div>
-                </>
-              )}
-              {isArray && (
-                <>
-                  <p className="flex items-center justify-end">Unique items</p>
-                  <div className="col-span-5">
-                    <Form.Item
-                      noStyle
-                      name={"uniqueItems"}
-                      valuePropName="checked"
-                    >
-                      <Switch />
-                    </Form.Item>
-                  </div>
-                  <p className="flex items-center justify-end">Min Length</p>
-                  <div className="col-span-2">
-                    <Form.Item noStyle name={"minItems"}>
-                      <Input
-                        type="number"
-                        style={{ width: "100%" }}
-                        // parser={(value) =>
-                        //   value ? parseInt(value.replace(/\D/g, ""), 10) : ""
-                        // }
-                        // formatter={(value) =>
-                        //   value ? `${Math.floor(Math.max(value, 0))}` : ""
-                        // }
-                        placeholder={"Input min length"}
-                      />
-                    </Form.Item>
-                  </div>
-                  <p className="flex items-center justify-end">Max Length</p>
-                  <div className="col-span-2">
-                    <Form.Item noStyle name={"maxItems"}>
-                      <Input
-                        type="number"
-                        style={{ width: "100%" }}
-                        // parser={(value) =>
-                        //   value ? parseInt(value.replace(/\D/g, ""), 10) : ""
-                        // }
-                        // formatter={(value) =>
-                        //   value ? `${Math.floor(Math.max(value, 0))}` : ""
-                        // }
-                        placeholder={"Input max length"}
-                      />
-                    </Form.Item>
-                  </div>
-                </>
-              )}
-              {(isString || isNumber || isInteger) && (
-                <div className="col-span-6 grid grid-cols-6 gap-2">
-                  <p className="flex items-center justify-end">Enums</p>
-                  <div className="col-span-5">
-                    <Form.List name="enums">
-                      {(fields, { add, remove }) => (
-                        <>
-                          <div className="grid grid-cols-2 gap-2 mb-2">
-                            {fields.map(({ key, name, ...restField }) => (
-                              <div className="flex gap-2" key={key}>
-                                <Form.Item
-                                  {...restField}
-                                  noStyle
-                                  name={[name]}
-                                  rules={[{ required: true }]}
-                                >
-                                  {isString && (
-                                    <Input placeholder="Input enum value" />
-                                  )}
-                                  {(isNumber || isInteger) && (
-                                    <Input
-                                      type="number"
-                                      style={{ width: "100%" }}
-                                      placeholder="Input enum value"
-                                    />
-                                  )}
-                                </Form.Item>
-                                <Button
-                                  size="icon"
-                                  color="destructive"
-                                  variant="destructive"
-                                  onClick={() => remove(name)}
-                                  className="shrink-0"
-                                >
-                                  <Trash2 className="size-4" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                          <Form.Item noStyle>
-                            <Button onClick={() => add()}>
-                              <Plus className="size-4" />
-                              Add enum
-                            </Button>
-                          </Form.Item>
-                        </>
-                      )}
-                    </Form.List>
-                  </div>
-                </div>
-              )}
-              <div className="font-semibold col-span-6">Json Schema</div>
-
-              {/* <MonacoEditor
-            height={300}
-            language="json"
-            value={JSON.stringify(formSchema, null, 2)}
-            handleEditorDidMount={handleEditorDidMount}
-            onChange={(value) => {
-              handleDebounce(() => {
-                if (value) {
-                  try {
-                    const editorSchema = JSON.parse(value);
-                    setFormSchema(editorSchema);
-                  } catch (e) {}
-                }
-              });
-            }}
-          /> */}
-              <CodeMirrorJson
-                className="col-span-6"
-                value={JSON.stringify(formSchema || {}, null, 2)}
-                editable
-                theme="dark"
-                height="300px"
-                onChange={(value) => {
-                  handleDebounce(() => {
-                    if (value) {
-                      try {
-                        const editorSchema = JSON.parse(value);
-                        setFormSchema(editorSchema);
-                      } catch (e) {}
-                    }
-                  });
-                }}
-              />
-            </div>
-          </Form>
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                if (!changeSchema) {
-                  return;
-                }
-                if (isRoot || schema.type === "object") {
-                  changeSchema(namePath, { ...schema, ...formSchema });
-                  setAdvancedModal(!advancedModal);
-                  return;
-                }
-                advancedForm
-                  .validateFields()
-                  .then((values) => {
-                    changeSchema(
-                      namePath,
-                      { ...schema, ...formSchema, ...values },
-                      propertyName
-                    );
-                    setAdvancedModal(!advancedModal);
-                  })
-                  .catch((errorInfo) => {
-                    console.log("Failed:", errorInfo);
-                  });
-              }}
-            >
-              Save
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setAdvancedModal(!advancedModal)}
-            >
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <Dialog open={importModal} onOpenChange={(open) => setImportModal(open)}>
         <DialogContent className="md:max-w-screen-md">
           <DialogHeader>
@@ -852,18 +467,10 @@ function SchemaItem(props: SchemaItemProps) {
             </TabsList>
           </Tabs>
           <div>
-            {/* Monaco Editor */}
-            {/* <MonacoEditor
-            height={390}
-            language="json"
-            handleEditorDidMount={handleEditorDidMount}
-            onChange={(value) => setImportValue(value)}
-          /> */}
             <CodeMirrorJson
               className="w-full"
-              // value={JSON.stringify(formSchema || {}, null, 2)}
               editable
-              theme="dark"
+              theme="light"
               height="300px"
               onChange={(value) => setImportValue(value)}
             />
@@ -911,6 +518,24 @@ function SchemaItem(props: SchemaItemProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <DialogAdvancedSettings
+        open={advancedModal}
+        onClose={() => setAdvancedModal(false)}
+        formSchema={formSchema}
+        setFormSchema={setFormSchema}
+        onSubmit={(payload) => {
+          if (!changeSchema) {
+            return;
+          }
+          if (isRoot || schema.type === "object") {
+            changeSchema(namePath, { ...schema, ...payload });
+            setAdvancedModal(!advancedModal);
+            return;
+          }
+          changeSchema(namePath, { ...schema, ...payload }, propertyName);
+          setAdvancedModal(!advancedModal);
+        }}
+      />
     </>
   );
 }
