@@ -193,23 +193,24 @@ function SchemaItem(props: SchemaItemProps) {
         className="flex pb-2 items-center gap-2"
         style={{ marginLeft: nodeDepth * 48 }}
       >
-        <div
-          // flex={`${24 + nodeDepth * 17}px`}
-          // style={{ marginLeft: nodeDepth * 5 }}
-          className="shrink-0 w-10"
-        >
+        <div className="shrink-0 w-10">
           {schema.type === "object" && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setExpand(!expand)}
-            >
-              {expand ? (
-                <ChevronDown className="size-4" />
-              ) : (
-                <ChevronRight className="size-4" />
-              )}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setExpand(!expand)}
+                >
+                  {expand ? (
+                    <ChevronDown className="size-4" />
+                  ) : (
+                    <ChevronRight className="size-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{expand ? "Collapse" : "Expand"}</TooltipContent>
+            </Tooltip>
           )}
         </div>
         <div className="flex-grow">
@@ -352,15 +353,10 @@ function SchemaItem(props: SchemaItemProps) {
           {(!isRoot && !isArrayItems) || schema.type === "object" ? (
             addChildItems ? (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button size="icon">
-                        <Plus className="size-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Add node</TooltipContent>
-                  </Tooltip>
+                <DropdownMenuTrigger>
+                  <Button size="icon">
+                    <Plus className="size-4" />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
