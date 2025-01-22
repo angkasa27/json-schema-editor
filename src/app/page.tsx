@@ -1,5 +1,10 @@
 "use client";
 import { CodeMirrorJson } from "@/components/ui/code-mirror-json";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import JsonSchemaEditor from "@/json-schema-editor";
 import { JSONSchema7 } from "@/json-schema-editor/types";
 import { DEFAULT_JSON_SCHEMA } from "@/json-schema-editor/utils";
@@ -17,23 +22,24 @@ export default function Home() {
 
   return (
     <div className="p-3">
-      <div className="grid grid-cols-5 gap-3">
-        <div className="col-span-2">
+      <ResizablePanelGroup direction="horizontal" className="border rounded-md">
+        <ResizablePanel minSize={20} defaultSize={30}>
           <CodeMirrorJson
             value={stringifyJson}
-            className="w-full"
+            className="w-full border-none"
             editable={false}
             height="900px"
             onChange={setStringifyJson}
           />
-        </div>
-        <div className="col-span-3">
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel className="p-3" minSize={50}>
           <JsonSchemaEditor
             data={jsonSchema}
             onSchemaChange={(v) => setJsonSchema(v)}
           />
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }
