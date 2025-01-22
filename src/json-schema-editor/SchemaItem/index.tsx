@@ -1,18 +1,14 @@
-import { Draft07 } from "json-schema-library";
 import _ from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import { JSONSchema7, JSONSchema7TypeName } from "../types";
 import {
   getDefaultSchema,
   getPropertyIndex,
-  parseJsonStr,
-  resolveJsonSchemaRef,
   SchemaTypeOptions,
 } from "../utils";
 import {
   ChevronDown,
   ChevronRight,
-  FileJson2,
   Plus,
   Settings,
   Trash2,
@@ -39,15 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CodeMirrorJson } from "@/components/ui/code-mirror-json";
 import { DialogAdvancedSettings } from "./dialog-advanced-settings";
 
 type SchemaItemProps = {
@@ -106,9 +93,6 @@ function SchemaItem(props: SchemaItemProps) {
   );
   const [expand, setExpand] = useState(true);
   const [advancedModal, setAdvancedModal] = useState(false);
-  const [importModal, setImportModal] = useState(false);
-  const [importType, setImportType] = useState<"json" | "json-schema">("json");
-  const [importValue, setImportValue] = useState<string | undefined>();
   const isRoot = typeof propertyName === "undefined";
 
   useEffect(() => {
@@ -370,20 +354,7 @@ function SchemaItem(props: SchemaItemProps) {
             <div className="w-10" />
           )}
           <div>
-            {isRoot ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    onClick={() => setImportModal(true)}
-                    disabled={false}
-                  >
-                    <FileJson2 className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Import JSON</TooltipContent>
-              </Tooltip>
-            ) : !isArrayItems ? (
+            {!isArrayItems && !isRoot ? (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -449,75 +420,6 @@ function SchemaItem(props: SchemaItemProps) {
         />
       )}
 
-      <Dialog open={importModal} onOpenChange={(open) => setImportModal(open)}>
-        <DialogContent className="md:max-w-screen-md">
-          <DialogHeader>
-            <DialogTitle>Import</DialogTitle>
-          </DialogHeader>
-
-          <Tabs
-            value={importType}
-            onValueChange={(type) =>
-              setImportType(type as "json" | "json-schema")
-            }
-          >
-            <TabsList>
-              <TabsTrigger value="json">Json</TabsTrigger>
-              <TabsTrigger value="json-schema">Json Schema</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div>
-            <CodeMirrorJson
-              className="w-full"
-              editable
-              theme="light"
-              height="300px"
-              onChange={(value) => setImportValue(value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={async () => {
-                if (!importValue || importValue.length === 0) {
-                  toast.error("Json value empty", {
-                    description: "Please input json value",
-                  });
-                  return;
-                }
-                const importObject = parseJsonStr(importValue);
-                if (!importObject) {
-                  toast.error("Json format is invalid", {
-                    description: "Please input valid json",
-                  });
-                  return;
-                }
-                let schema;
-                switch (importType) {
-                  case "json":
-                    schema = new Draft07().createSchemaOf(importObject);
-                    break;
-                  case "json-schema":
-                    schema = await resolveJsonSchemaRef(importObject);
-                    break;
-                }
-                if (changeSchema) {
-                  changeSchema([], schema);
-                  setImportModal(!importModal);
-                  setImportValue(undefined);
-                }
-              }}
-            >
-              Import
-            </Button>
-            <Button
-              onClick={() => setImportModal(!importModal)}
-              variant="outline"
-            >
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <DialogAdvancedSettings
         open={advancedModal}
         onClose={() => setAdvancedModal(false)}
