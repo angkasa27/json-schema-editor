@@ -1,5 +1,4 @@
 import { Draft07 } from "json-schema-library";
-import _ from "lodash";
 import { parseJsonStr, resolveJsonSchemaRef } from "@/json-schema-editor/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
