@@ -237,20 +237,25 @@ function SchemaItem(props: SchemaItemProps) {
             onChange={(name) => setPropertyName(name.target.value)}
           />
         </div>
-        <div className="shrink-0">
-          <Checkbox
-            disabled={!!isArrayItems || !!isRoot}
-            checked={!!isRequire}
-            onCheckedChange={(checked) => {
-              if (updateRequiredProperty && propertyName) {
-                updateRequiredProperty(
-                  namePath.slice(0, parentSchemaDepth),
-                  propertyName,
-                  !checked
-                );
-              }
-            }}
-          />
+        <div className="shrink-0 flex items-center">
+          <Tooltip>
+            <TooltipTrigger className="flex items-center">
+              <Checkbox
+                disabled={!!isArrayItems || !!isRoot}
+                checked={!!isRequire}
+                onCheckedChange={(checked) => {
+                  if (updateRequiredProperty && propertyName) {
+                    updateRequiredProperty(
+                      namePath.slice(0, parentSchemaDepth),
+                      propertyName,
+                      !checked
+                    );
+                  }
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent>is Required</TooltipContent>
+          </Tooltip>
         </div>
         <div
           //  flex={"95px"} style={{ marginLeft: 5 }}
