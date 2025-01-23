@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { FileJson2 } from "lucide-react";
 
 export default function Home() {
-  const [jsonSchema, setJsonSchema] = useState<JSONSchema7>();
+  const [jsonSchema, setJsonSchema] =
+    useState<JSONSchema7>(DEFAULT_JSON_SCHEMA);
   const [stringifyJson, setStringifyJson] = useState<string>();
   const [importModal, setImportModal] = useState<boolean>(false);
 
