@@ -353,30 +353,26 @@ function SchemaItem(props: SchemaItemProps) {
           ) : (
             <div className="w-10" />
           )}
-          <div>
-            {!isArrayItems && !isRoot ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    onClick={() => {
-                      if (removeProperty) {
-                        removeProperty(namePath);
-                      }
-                    }}
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Remove Node</TooltipContent>
-              </Tooltip>
-            ) : (
-              <div className="w-10" />
-            )}
-          </div>
-          {isRoot && schema.type !== "object" && (
-            <div>{!isArrayItems && <div className="w-10" />}</div>
+
+          {!isArrayItems && !isRoot ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  onClick={() => {
+                    if (removeProperty) {
+                      removeProperty(namePath);
+                    }
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Remove Node</TooltipContent>
+            </Tooltip>
+          ) : (
+            <div className="w-10" />
           )}
         </div>
       </div>
