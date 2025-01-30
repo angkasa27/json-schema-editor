@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JSON Schema Editor (React + TailwindCSS + React Hook Form)
 
-## Getting Started
+## Overview
 
-First, run the development server:
+This project is a JSON Schema Editor based on React. It allows users to visualize and edit the structure of a JSON schema without manually modifying the JSON code. By providing an intuitive interface, users can interact with JSON schemas more efficiently and reduce the chances of errors.
+
+This project is a modified version of [json-schema-editor-antd](https://github.com/lin-mt/json-schema-editor-antd). The original project is built using Ant Design (antd), while this modified version replaces Ant Design components with TailwindCSS for styling and React Hook Form for form management. This ensures a more modern UI framework with a flexible and reactive form handling experience.
+
+## Features
+
+- 🖼 **Visual Schema Representation** – Easily view and edit JSON schema structures without dealing with raw JSON code.
+- 🎨 **TailwindCSS** – Lightweight styling with utility-first CSS.
+- 🔄 **React Hook Form** – Efficient form management with minimal re-renders.
+- 🛠 **Customizable** – Extend and adapt the editor for different schema requirements.
+- ⚛ **React-Based** – Built on a modern React architecture.
+
+## Installation
+
+Since the package is not yet published on npm, you can clone the repository and install dependencies manually:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/angkasa27/json-schema-editor.git
+cd json-schema-editor
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Here’s how you can use the JSON Schema Editor component in your React project:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```jsx
+import JsonSchemaEditor from "@/json-schema-editor";
+import { JSONSchema7 } from "@/json-schema-editor/types";
+import { useState } from "react";
 
-## Learn More
+const App = () =>{
+  const [jsonSchema, setJsonSchema] = useState<JSONSchema7>();
 
-To learn more about Next.js, take a look at the following resources:
+  return (
+    <div className="p-3">
+      <JsonSchemaEditor
+        data={jsonSchema}
+        onSchemaChange={(v) => setJsonSchema(v)}
+      />
+    </div>
+  );
+}
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+export default App;
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Props
 
-## Deploy on Vercel
+| Prop Name        | Type     | Description                                             |
+| ---------------- | -------- | ------------------------------------------------------- |
+| `onSchemaChange` | Function | Callback function triggered when the schema is updated. |
+| `data`           | Object   | The current JSON schema object.                         |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Development
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Clone the Repository
+
+```bash
+git clone https://github.com/angkasa27/json-schema-editor.git
+cd json-schema-editor
+```
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Start Development Server
+
+```bash
+npm start
+```
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+## Contributing
+
+Contributions are welcome! Feel free to submit issues, feature requests, or pull requests.
+
+---
+
+If you have any questions or need further clarification, feel free to reach out!
