@@ -1,5 +1,7 @@
 # JSON Schema Editor (React + TailwindCSS + React Hook Form)
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 ## Overview
 
 This project is a JSON Schema Editor based on React. It allows users to visualize and edit the structure of a JSON schema without manually modifying the JSON code. By providing an intuitive interface, users can interact with JSON schemas more efficiently and reduce the chances of errors.
@@ -86,6 +88,12 @@ npm run build
 ## Contributing
 
 Contributions are welcome! Feel free to submit issues, feature requests, or pull requests.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
 
 ---
 
