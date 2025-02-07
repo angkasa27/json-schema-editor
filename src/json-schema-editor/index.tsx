@@ -5,6 +5,7 @@ import { JSONSchema7, SchemaEditorProps } from "./types";
 import { DEFAULT_JSON_SCHEMA, getDefaultSchema, inferSchema } from "./utils";
 import { toast } from "sonner";
 import { useControllableState } from "@/hooks/use-controllable-state";
+import { EditorContext } from "./context";
 
 export interface JsonSchemaEditorHandle {
   changeSchema: (namePath: number[], value: any, propertyName?: string) => void;
@@ -43,6 +44,7 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorHandle, SchemaEditorProps>(
       },
       onChange: props.onSchemaChange,
     });
+
     const [fieldCount, setFieldCount] = useState(0);
 
     const changeSchema = (
@@ -207,19 +209,24 @@ const JsonSchemaEditor = forwardRef<JsonSchemaEditorHandle, SchemaEditorProps>(
       setSchema(schemaClone!);
     }
 
+    console.log("Parent Container");
+
     useImperativeHandle(ref, () => ({ changeSchema }));
 
     return (
       <div style={{ paddingTop: "10px 10px 0 10px" }}>
-        <SchemaItem
-          schema={schema!}
-          changeSchema={changeSchema}
-          renameProperty={renameProperty}
-          removeProperty={removeProperty}
-          addProperty={addProperty}
-          updateRequiredProperty={updateRequiredProperty}
-          handleAdvancedSettingClick={props.handleAdvancedSettingClick}
-        />
+        <EditorContext.Provider
+          value={{
+            changeSchema,
+            renameProperty,
+            removeProperty,
+            addProperty,
+            updateRequiredProperty,
+            handleAdvancedSettingClick: props.handleAdvancedSettingClick,
+          }}
+        >
+          <SchemaItem schema={schema!} />
+        </EditorContext.Provider>
       </div>
     );
   }

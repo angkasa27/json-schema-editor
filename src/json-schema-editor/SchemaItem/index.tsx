@@ -1,5 +1,12 @@
 import _ from "lodash";
-import { useCallback, useEffect, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { JSONSchema7, JSONSchema7TypeName } from "../types";
 import {
   getDefaultSchema,
@@ -36,6 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DialogAdvancedSettings } from "./dialog-advanced-settings";
+import { EditorContext } from "../context";
 
 type SchemaItemProps = {
   propertyName?: string;
@@ -45,97 +53,23 @@ type SchemaItemProps = {
   isArrayItems?: boolean;
   isRequire?: boolean;
   schema: JSONSchema7;
-  changeSchema?: (
-    namePath: number[],
-    value: any,
-    propertyName?: string
-  ) => void;
-  renameProperty?: (namePath: number[], name: string) => void;
-  removeProperty?: (namePath: number[]) => void;
-  addProperty?: (path: number[], isChild: boolean) => void;
-  updateRequiredProperty?: (
-    path: number[],
-    requiredProperty: string,
-    removed: boolean
-  ) => void;
-  handleAdvancedSettingClick?: (
-    namePath: number[],
-    schema: JSONSchema7,
-    propertyName?: string
-  ) => boolean;
 };
 
-function SchemaItem(props: SchemaItemProps) {
+function SchemaItemContainer(props: SchemaItemProps) {
   const {
-    changeSchema,
-    renameProperty,
-    isArrayItems,
-    updateRequiredProperty,
     parentSchemaDepth = 0,
-    removeProperty,
-    addProperty,
-    isRequire,
-    handleAdvancedSettingClick,
+    propertyName,
+    nodeDepth = 0,
+    namePath = [],
+    schema,
   } = props;
 
-  const [schema, setSchema] = useState(props.schema);
-  const [formSchema, setFormSchema] = useState<any>();
-  const [propertyName, setPropertyName] = useState(props.propertyName);
-  const [schemaTitle, setSchemaTitle] = useState(schema.title);
-  const [schemaDescription, setSchemaDescription] = useState(
-    schema.description
-  );
-  const [nodeDepth, setNodeDepth] = useState(
-    props.nodeDepth ? props.nodeDepth : 0
-  );
-  const [namePath, setNamePath] = useState<number[]>(
-    props.namePath ? props.namePath : []
-  );
   const [expand, setExpand] = useState(true);
-  const [advancedModal, setAdvancedModal] = useState(false);
-  const isRoot = typeof propertyName === "undefined";
 
-  useEffect(() => {
-    setSchema(props.schema);
-  }, [props.schema]);
-
-  useEffect(() => {
-    setNamePath(props.namePath ? props.namePath : []);
-  }, [props.namePath]);
-
-  useEffect(() => {
-    setNodeDepth(props.nodeDepth ? props.nodeDepth : 0);
-  }, [props.nodeDepth]);
-
-  const handleDebounce = useCallback(
-    _.debounce(
-      (callback) => {
-        if (typeof callback === "function") {
-          callback();
-        } else {
-          console.log("Provided argument is not a function");
-        }
-      },
-      300,
-      { maxWait: 1000 }
-    ),
-    []
+  const isRoot = useMemo(
+    () => typeof propertyName === "undefined",
+    [propertyName]
   );
-
-  useEffect(() => {
-    return () => {
-      handleDebounce.cancel();
-    };
-  }, [handleDebounce]);
-
-  const schemaItems: any = schema.items;
-  const addChildItems =
-    !!(
-      schema.type === "object" ||
-      (isArrayItems && schemaItems?.type === "object")
-    ) &&
-    !isArrayItems &&
-    !isRoot;
 
   if (!schema.type) {
     return <></>;
@@ -167,214 +101,7 @@ function SchemaItem(props: SchemaItemProps) {
             </Tooltip>
           )}
         </div>
-        <div className="flex-grow">
-          <Input
-            // status={!isRoot && propertyName.length === 0 ? "error" : undefined}
-            disabled={isRoot || isArrayItems}
-            value={isRoot ? "root" : propertyName}
-            placeholder={"Property Name"}
-            onBlur={() => {
-              if (propertyName?.length === 0) {
-                toast.error("Property name cannot be empty", {
-                  description: "Please input property name",
-                });
-                return;
-              }
-              if (
-                renameProperty &&
-                propertyName &&
-                propertyName?.length !== 0
-              ) {
-                renameProperty(namePath, propertyName);
-              }
-            }}
-            onChange={(name) => setPropertyName(name.target.value)}
-          />
-        </div>
-        <div className="shrink-0 flex items-center">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Checkbox
-                disabled={!!isArrayItems || !!isRoot}
-                checked={!!isRequire}
-                onCheckedChange={(checked) => {
-                  if (updateRequiredProperty && propertyName) {
-                    updateRequiredProperty(
-                      namePath.slice(0, parentSchemaDepth),
-                      propertyName,
-                      !checked
-                    );
-                  }
-                }}
-              />
-            </TooltipTrigger>
-            <TooltipContent>is Required</TooltipContent>
-          </Tooltip>
-        </div>
-        <div
-          //  flex={"95px"} style={{ marginLeft: 5 }}
-          className="w-28"
-        >
-          <Select
-            value={schema.type as string}
-            onValueChange={(type) => {
-              if (changeSchema) {
-                changeSchema(
-                  namePath,
-                  getDefaultSchema(type as JSONSchema7TypeName),
-                  "type"
-                );
-              }
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SchemaTypeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div
-          className="flex-grow"
-          //  flex={"auto"} style={{ marginLeft: 5 }}
-        >
-          <Input
-            placeholder={"Title"}
-            value={schemaTitle}
-            onBlur={() => {
-              if (changeSchema) {
-                changeSchema(
-                  namePath.concat(getPropertyIndex(schema, "title")),
-                  schemaTitle,
-                  "title"
-                );
-              }
-            }}
-            onChange={(title) => setSchemaTitle(title.target.value)}
-          />
-        </div>
-        <div
-          className="flex-grow"
-          //  flex={"auto"} style={{ marginLeft: 5 }}
-        >
-          <Input
-            placeholder={"Description"}
-            value={schemaDescription}
-            onBlur={() => {
-              if (changeSchema) {
-                changeSchema(
-                  namePath.concat(getPropertyIndex(schema, "description")),
-                  schemaDescription,
-                  "description"
-                );
-              }
-            }}
-            onChange={(description) =>
-              setSchemaDescription(description.target.value)
-            }
-          />
-        </div>
-        <div
-          className="flex shrink-0 gap-2"
-          //  flex={"72px"} style={{ marginLeft: 5 }}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                onClick={() => {
-                  if (
-                    handleAdvancedSettingClick &&
-                    !handleAdvancedSettingClick(
-                      namePath,
-                      schema,
-                      isRoot || schema.type === "object"
-                        ? undefined
-                        : propertyName
-                    )
-                  ) {
-                    return;
-                  }
-                  setFormSchema(schema);
-                  setAdvancedModal(!advancedModal);
-                }}
-              >
-                <Settings className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Advanced Settings</TooltipContent>
-          </Tooltip>
-          {(!isRoot && !isArrayItems) || schema.type === "object" ? (
-            addChildItems ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="icon">
-                    <Plus className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      if (addProperty) {
-                        addProperty(namePath, false);
-                      }
-                    }}
-                  >
-                    Add Node
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      if (addProperty) {
-                        addProperty(namePath, true);
-                      }
-                    }}
-                  >
-                    Add Child Node
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                size="icon"
-                onClick={() => {
-                  if (addProperty) {
-                    addProperty(namePath, !(!isArrayItems && !isRoot));
-                  }
-                }}
-              >
-                <Plus className="size-4" />
-              </Button>
-            )
-          ) : (
-            <div className="w-10" />
-          )}
-
-          {!isArrayItems && !isRoot ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  onClick={() => {
-                    if (removeProperty) {
-                      removeProperty(namePath);
-                    }
-                  }}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Remove Node</TooltipContent>
-            </Tooltip>
-          ) : (
-            <div className="w-10" />
-          )}
-        </div>
+        <SchemaItem {...props} />
       </div>
       {schema.type === "object" &&
         expand &&
@@ -383,7 +110,7 @@ function SchemaItem(props: SchemaItemProps) {
           if (schema.properties) {
             return (
               <div key={String(name)}>
-                <SchemaItem
+                <SchemaItemContainer
                   {...props}
                   isRequire={schema.required?.includes(name)}
                   isArrayItems={false}
@@ -395,7 +122,6 @@ function SchemaItem(props: SchemaItemProps) {
                   )}
                   propertyName={name}
                   schema={schema.properties[name] as JSONSchema7}
-                  handleAdvancedSettingClick={handleAdvancedSettingClick}
                 />
               </div>
             );
@@ -403,7 +129,7 @@ function SchemaItem(props: SchemaItemProps) {
           return <></>;
         })}
       {schema.type === "array" && expand && (
-        <SchemaItem
+        <SchemaItemContainer
           {...props}
           isRequire={false}
           isArrayItems={true}
@@ -412,30 +138,300 @@ function SchemaItem(props: SchemaItemProps) {
           propertyName={"items"}
           namePath={namePath.concat(getPropertyIndex(schema, "items"))}
           schema={schema.items as JSONSchema7}
-          handleAdvancedSettingClick={handleAdvancedSettingClick}
         />
       )}
-
-      <DialogAdvancedSettings
-        open={advancedModal}
-        onClose={() => setAdvancedModal(false)}
-        formSchema={formSchema}
-        setFormSchema={setFormSchema}
-        onSubmit={(payload) => {
-          if (!changeSchema) {
-            return;
-          }
-          if (isRoot || schema.type === "object") {
-            changeSchema(namePath, { ...schema, ...payload });
-            setAdvancedModal(!advancedModal);
-            return;
-          }
-          changeSchema(namePath, { ...schema, ...payload }, propertyName);
-          setAdvancedModal(!advancedModal);
-        }}
-      />
     </>
   );
 }
 
-export default SchemaItem;
+export default SchemaItemContainer;
+
+const SchemaItem = (props: SchemaItemProps) => {
+  const {
+    isArrayItems,
+    parentSchemaDepth = 0,
+    isRequire,
+    namePath = [],
+  } = props;
+
+  const {
+    updateRequiredProperty,
+    removeProperty,
+    addProperty,
+    handleAdvancedSettingClick,
+    changeSchema,
+    renameProperty,
+  } = useContext(EditorContext);
+
+  const [schema, setSchema] = useState(props.schema);
+  const [propertyName, setPropertyName] = useState(props.propertyName);
+  const [schemaTitle, setSchemaTitle] = useState(schema.title);
+  const [schemaDescription, setSchemaDescription] = useState(
+    schema.description
+  );
+
+  const [advancedModal, setAdvancedModal] = useState(false);
+  const isRoot = typeof propertyName === "undefined";
+
+  const handleDebounce = useCallback(
+    _.debounce(
+      (callback) => {
+        if (typeof callback === "function") {
+          callback();
+        } else {
+          console.log("Provided argument is not a function");
+        }
+      },
+      300,
+      { maxWait: 1000 }
+    ),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      handleDebounce.cancel();
+    };
+  }, [handleDebounce]);
+
+  const addChildItems = useMemo(
+    () =>
+      !!(
+        schema.type === "object" ||
+        (isArrayItems && (schema.items as any)?.type === "object")
+      ) &&
+      !isArrayItems &&
+      !isRoot,
+    [schema.type, schema.items, isArrayItems, isRoot]
+  );
+
+  return (
+    <>
+      <div className="flex-grow">
+        <Input
+          // status={!isRoot && propertyName.length === 0 ? "error" : undefined}
+          disabled={isRoot || isArrayItems}
+          value={isRoot ? "root" : propertyName}
+          placeholder={"Property Name"}
+          onBlur={() => {
+            if (propertyName?.length === 0) {
+              toast.error("Property name cannot be empty", {
+                description: "Please input property name",
+              });
+              return;
+            }
+            if (renameProperty && propertyName && propertyName?.length !== 0) {
+              renameProperty(namePath, propertyName);
+            }
+          }}
+          onChange={(name) => setPropertyName(name.target.value)}
+        />
+      </div>
+      <div className="shrink-0 flex items-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Checkbox
+              disabled={!!isArrayItems || !!isRoot}
+              checked={!!isRequire}
+              onCheckedChange={(checked) => {
+                if (updateRequiredProperty && propertyName) {
+                  updateRequiredProperty(
+                    namePath.slice(0, parentSchemaDepth),
+                    propertyName,
+                    !checked
+                  );
+                }
+              }}
+            />
+          </TooltipTrigger>
+          <TooltipContent>is Required</TooltipContent>
+        </Tooltip>
+      </div>
+      <div
+        //  flex={"95px"} style={{ marginLeft: 5 }}
+        className="w-28"
+      >
+        <Select
+          value={schema.type as string}
+          onValueChange={(type) => {
+            if (changeSchema) {
+              changeSchema(
+                namePath,
+                getDefaultSchema(type as JSONSchema7TypeName),
+                "type"
+              );
+            }
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SchemaTypeOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.value}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div
+        className="flex-grow"
+        //  flex={"auto"} style={{ marginLeft: 5 }}
+      >
+        <Input
+          placeholder={"Title"}
+          value={schemaTitle}
+          onBlur={() => {
+            if (changeSchema) {
+              changeSchema(
+                namePath.concat(getPropertyIndex(schema, "title")),
+                schemaTitle,
+                "title"
+              );
+            }
+          }}
+          onChange={(title) => setSchemaTitle(title.target.value)}
+        />
+      </div>
+      <div
+        className="flex-grow"
+        //  flex={"auto"} style={{ marginLeft: 5 }}
+      >
+        <Input
+          placeholder={"Description"}
+          value={schemaDescription}
+          onBlur={() => {
+            if (changeSchema) {
+              changeSchema(
+                namePath.concat(getPropertyIndex(schema, "description")),
+                schemaDescription,
+                "description"
+              );
+            }
+          }}
+          onChange={(description) =>
+            setSchemaDescription(description.target.value)
+          }
+        />
+      </div>
+      <div
+        className="flex shrink-0 gap-2"
+        //  flex={"72px"} style={{ marginLeft: 5 }}
+      >
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              onClick={() => {
+                if (
+                  handleAdvancedSettingClick &&
+                  !handleAdvancedSettingClick(
+                    namePath,
+                    schema,
+                    isRoot || schema.type === "object"
+                      ? undefined
+                      : propertyName
+                  )
+                ) {
+                  return;
+                }
+                setAdvancedModal(true);
+              }}
+            >
+              <Settings className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Advanced Settings</TooltipContent>
+        </Tooltip>
+        {(!isRoot && !isArrayItems) || schema.type === "object" ? (
+          addChildItems ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="icon">
+                  <Plus className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (addProperty) {
+                      addProperty(namePath, false);
+                    }
+                  }}
+                >
+                  Add Node
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (addProperty) {
+                      addProperty(namePath, true);
+                    }
+                  }}
+                >
+                  Add Child Node
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              size="icon"
+              onClick={() => {
+                if (addProperty) {
+                  addProperty(namePath, !(!isArrayItems && !isRoot));
+                }
+              }}
+            >
+              <Plus className="size-4" />
+            </Button>
+          )
+        ) : (
+          <div className="w-10" />
+        )}
+
+        {!isArrayItems && !isRoot ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="destructive"
+                onClick={() => {
+                  if (removeProperty) {
+                    removeProperty(namePath);
+                  }
+                }}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Remove Node</TooltipContent>
+          </Tooltip>
+        ) : (
+          <div className="w-10" />
+        )}
+      </div>
+      {!!advancedModal && (
+        <DialogAdvancedSettings
+          open
+          onClose={() => setAdvancedModal(false)}
+          schema={schema}
+          onSubmit={(payload) => {
+            if (!changeSchema) {
+              return;
+            }
+            setSchema(payload);
+            if (isRoot || schema.type === "object") {
+              changeSchema(namePath, { ...schema, ...payload });
+              setAdvancedModal(!advancedModal);
+              return;
+            }
+            changeSchema(namePath, { ...schema, ...payload }, propertyName);
+            setAdvancedModal(!advancedModal);
+          }}
+        />
+      )}
+    </>
+  );
+};
+
+const MemoizeSchemaItem = memo(SchemaItem);

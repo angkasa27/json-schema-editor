@@ -40,13 +40,14 @@ import { Plus, Trash2 } from "lucide-react";
 type DialogAdvanceSettingsProps = {
   open: boolean;
   onClose: () => void;
-  formSchema: any;
-  setFormSchema: (_: any) => void;
+  schema: any;
   onSubmit: (data: any) => void;
 };
 
 export function DialogAdvancedSettings(props: DialogAdvanceSettingsProps) {
-  const { open, onClose, formSchema, setFormSchema, onSubmit } = props;
+  const { open, onClose, schema, onSubmit } = props;
+  const [formSchema, setFormSchema] = useState<any>();
+
   const [isObject, setIsObject] = useState(false);
   const [isArray, setIsArray] = useState(false);
   const [isNumber, setIsNumber] = useState(false);
@@ -81,18 +82,18 @@ export function DialogAdvancedSettings(props: DialogAdvanceSettingsProps) {
   }, [handleDebounce]);
 
   useEffect(() => {
-    if (!open || !formSchema) {
+    if (!open || !schema) {
       return;
     }
     // advancedForm.setFieldsValue(formSchema);
-    form.reset(formSchema);
-    setIsObject(formSchema.type === "object");
-    setIsArray(formSchema.type === "array");
-    setIsNumber(formSchema.type === "number");
-    setIsBoolean(formSchema.type === "boolean");
-    setIsInteger(formSchema.type === "integer");
-    setIsString(formSchema.type === "string");
-  }, [open, formSchema]);
+    form.reset(schema);
+    setIsObject(schema.type === "object");
+    setIsArray(schema.type === "array");
+    setIsNumber(schema.type === "number");
+    setIsBoolean(schema.type === "boolean");
+    setIsInteger(schema.type === "integer");
+    setIsString(schema.type === "string");
+  }, [open, schema]);
 
   const onTabChanges = (val: string) => {
     if (val === "json") {
