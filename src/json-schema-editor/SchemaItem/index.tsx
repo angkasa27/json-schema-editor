@@ -194,6 +194,22 @@ const SchemaItem = (props: SchemaItemProps) => {
     };
   }, [handleDebounce]);
 
+  useEffect(() => {
+    setSchema(props.schema);
+  }, [props.schema]);
+
+  useEffect(() => {
+    setPropertyName(props.propertyName);
+  }, [props.propertyName]);
+
+  useEffect(() => {
+    setSchemaTitle(schema.title);
+  }, [schema.title]);
+
+  useEffect(() => {
+    setSchemaDescription(schema.description);
+  }, [schema.description]);
+
   const addChildItems = useMemo(
     () =>
       !!(
