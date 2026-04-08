@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Ajv from "ajv";
+import Ajv07 from "ajv";
+import Ajv2019 from "ajv/dist/2019";
+import Ajv2020 from "ajv/dist/2020";
+import addFormats from "ajv-formats";
 import { parseJsonStr } from "@/lib/schema/utils";
 import type { JSONSchema7 } from "@/lib/schema/types";
 import { Button } from "@/components/ui/button";
@@ -20,6 +23,7 @@ type DialogValidateProps = {
   open: boolean;
   onClose: () => void;
   schema: JSONSchema7;
+  draftVersion: "draft-07" | "draft-2019-09" | "draft-2020-12";
 };
 
 // Interface for validation errors from json-schema-library
@@ -31,7 +35,7 @@ interface JsonSchemaError {
   data?: unknown;
 }
 
-export function DialogValidate({ open, onClose, schema }: DialogValidateProps) {
+export function DialogValidate({ open, onClose, schema, draftVersion }: DialogValidateProps) {
   const [dataValue, setDataValue] = useState<string | undefined>('{\n  \n}');
   const [validationResult, setValidationResult] = useState<{
     status: "idle" | "success" | "error";
@@ -61,9 +65,20 @@ export function DialogValidate({ open, onClose, schema }: DialogValidateProps) {
     }
 
     try {
-        // Build the validation schema
-        const ajv = new Ajv({ allErrors: true });
-        const validate = ajv.compile(schema as Record<string, unknown>);
+        // Build the validation schema dynamically based on Draft Version
+        let ajvInstance;
+        if (draftVersion === "draft-2020-12") {
+            ajvInstance = new Ajv2020({ allErrors: true });
+        } else if (draftVersion === "draft-2019-09") {
+            ajvInstance = new Ajv2019({ allErrors: true });
+        } else {
+            ajvInstance = new Ajv07({ allErrors: true });
+        }
+        
+        // Add format validation globally
+        addFormats(ajvInstance as unknown as Ajv07);
+
+        const validate = ajvInstance.compile(schema as Record<string, unknown>);
         const valid = validate(dataObject);
 
         if (valid) {
@@ -90,7 +105,7 @@ export function DialogValidate({ open, onClose, schema }: DialogValidateProps) {
             ],
           });
     }
-  }, [dataValue, schema]);
+  }, [dataValue, schema, draftVersion]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
