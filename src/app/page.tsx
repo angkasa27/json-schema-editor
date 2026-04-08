@@ -11,8 +11,9 @@ import JsonSchemaEditor from "@/components/schema-editor";
 import { DEFAULT_JSON_SCHEMA } from "@/lib/schema/utils";
 import type { JSONSchema7 } from "@/lib/schema/types";
 import { DialogImport } from "@/components/schema-editor/dialog-import";
+import { DialogValidate } from "@/components/schema-editor/dialog-validate";
 import { Button } from "@/components/ui/button";
-import { FileJson2, Copy, Check, Braces, Download } from "lucide-react";
+import { FileJson2, Copy, Check, Braces, Download, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
@@ -25,6 +26,7 @@ export default function Home() {
   );
 
   const [importModal, setImportModal] = useState(false);
+  const [validateModal, setValidateModal] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -71,6 +73,14 @@ export default function Home() {
           </Badge>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setValidateModal(true)}
+          >
+            <Play className="size-4" />
+            <span className="hidden sm:inline">Validate</span>
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -175,6 +185,15 @@ export default function Home() {
             setJsonSchema(schema);
             setImportModal(false);
           }}
+        />
+      )}
+
+      {/* Validate Dialog */}
+      {validateModal && (
+        <DialogValidate
+          open
+          onClose={() => setValidateModal(false)}
+          schema={jsonSchema}
         />
       )}
     </div>
