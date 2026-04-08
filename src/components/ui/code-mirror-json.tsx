@@ -1,39 +1,57 @@
 "use client";
 
-import ReactCodeMirror, { BasicSetupOptions, ReactCodeMirrorProps } from '@uiw/react-codemirror'
-import { json, jsonParseLinter } from '@codemirror/lang-json';
-import { linter, lintGutter } from '@codemirror/lint';
-import clsx, { ClassValue } from 'clsx'
-import React from 'react'
+import { json } from "@codemirror/lang-json";
+import { linter, type Diagnostic } from "@codemirror/lint";
+import CodeMirror, { type ReactCodeMirrorProps } from "@uiw/react-codemirror";
+import { cn } from "@/lib/utils";
 
-interface CodeMirrorJsonProps extends Omit<ReactCodeMirrorProps, "extensions" | "className" | "basicSetup"> {
-  basicSetup?: BasicSetupOptions;
-  className?: ClassValue;
+const jsonLinter = linter((view) => {
+  const diagnostics: Diagnostic[] = [];
+  const doc = view.state.doc.toString();
+  if (!doc.trim()) return diagnostics;
+
+  try {
+    JSON.parse(doc);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Invalid JSON";
+    // Try to extract position from error message
+    const match = message.match(/position (\d+)/);
+    const pos = match ? parseInt(match[1], 10) : 0;
+    diagnostics.push({
+      from: Math.min(pos, doc.length),
+      to: Math.min(pos + 1, doc.length),
+      severity: "error",
+      message,
+    });
+  }
+  return diagnostics;
+});
+
+interface CodeMirrorJsonProps extends ReactCodeMirrorProps {
+  className?: string;
 }
 
-export const CodeMirrorJson = React.forwardRef<HTMLDivElement, CodeMirrorJsonProps>(({ className, ...props }, ref) => {
+export function CodeMirrorJson({
+  className,
+  extensions = [],
+  ...props
+}: CodeMirrorJsonProps) {
   return (
-    <div className={(clsx("border rounded-md overflow-hidden", className))} ref={ref}>
-      <ReactCodeMirror
-        indentWithTab
-        extensions={[json(), linter(jsonParseLinter()), lintGutter()]}
-        maxHeight="600px"
-        lang="json"
-        tabIndex={4}
-        {...props}
-        basicSetup={{
-          allowMultipleSelections: true,
-          tabSize: 4,
-          indentOnInput: true,
-          closeBrackets: true,
-          bracketMatching: true,
-          autocompletion: true,
-          highlightActiveLine: true,
-          ...props.basicSetup,
-        }}
-      />
-    </div>
-  )
-})
-
-CodeMirrorJson.displayName = "CodeMirrorJson"
+    <CodeMirror
+      className={cn(
+        "rounded-md border text-sm [&_.cm-editor]:outline-none [&_.cm-gutters]:border-r-0",
+        className
+      )}
+      extensions={[json(), jsonLinter, ...extensions]}
+      basicSetup={{
+        lineNumbers: true,
+        foldGutter: true,
+        highlightActiveLine: false,
+        bracketMatching: true,
+        closeBrackets: true,
+        indentOnInput: true,
+      }}
+      {...props}
+    />
+  );
+}

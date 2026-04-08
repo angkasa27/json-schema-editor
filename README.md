@@ -1,100 +1,60 @@
-# JSON Schema Editor (React + TailwindCSS + React Hook Form)
+# JSON Schema Editor
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+A modern, highly performant visual editor for JSON Schema Draft 07, built with React, Next.js, and Zustand.
 
 ## Overview
 
-This project is a JSON Schema Editor based on React. It allows users to visualize and edit the structure of a JSON schema without manually modifying the JSON code. By providing an intuitive interface, users can interact with JSON schemas more efficiently and reduce the chances of errors.
+JSON Schema Editor is a powerful tool to visually build, edit, and validate JSON Schema documents. It abstracts away the raw JSON representation and provides an intuitive, recursive tree UI to manage complex object structures, arrays, and field validations.
 
-This project is a modified version of [json-schema-editor-antd](https://github.com/lin-mt/json-schema-editor-antd). The original project is built using Ant Design (antd), while this modified version replaces Ant Design components with TailwindCSS for styling and React Hook Form for form management. This ensures a more modern UI framework with a flexible and reactive form handling experience.
+Originally inspired by `json-schema-editor-antd`, this iteration is a ground-up rewrite using a modern tech stack centered exclusively on clean state management, modular component composition, and responsive styling.
 
-## Features
+## Tech Stack
 
-- 🖼 **Visual Schema Representation** – Easily view and edit JSON schema structures without dealing with raw JSON code.
-- 🎨 **TailwindCSS** – Lightweight styling with utility-first CSS.
-- 🔄 **React Hook Form** – Efficient form management with minimal re-renders.
-- 🛠 **Customizable** – Extend and adapt the editor for different schema requirements.
-- ⚛ **React-Based** – Built on a modern React architecture.
+- **Framework**: Next.js 16 (App Router)
+- **Library**: React 19
+- **State Management**: Zustand
+- **Validation**: Zod (v4)
+- **UI Components**: shadcn/ui + base-ui primitives
+- **Styling**: Tailwind CSS 4.0
+- **Editor**: CodeMirror 5 (via `@uiw/react-codemirror`)
+- **Package Manager**: pnpm
 
-## Installation
+## Key Features
 
-Since the package is not yet published on npm, you can clone the repository and install dependencies manually:
-
-```bash
-git clone https://github.com/angkasa27/json-schema-editor.git
-cd json-schema-editor
-npm install
-```
-
-## Usage
-
-Here’s how you can use the JSON Schema Editor component in your React project:
-
-```jsx
-import JsonSchemaEditor from "@/json-schema-editor";
-import { JSONSchema7 } from "@/json-schema-editor/types";
-import { useState } from "react";
-
-const App = () =>{
-  const [jsonSchema, setJsonSchema] = useState<JSONSchema7>();
-
-  return (
-    <div className="p-3">
-      <JsonSchemaEditor
-        data={jsonSchema}
-        onSchemaChange={(v) => setJsonSchema(v)}
-      />
-    </div>
-  );
-}
-
-export default App;
-```
-
-## Props
-
-| Prop Name        | Type     | Description                                             |
-| ---------------- | -------- | ------------------------------------------------------- |
-| `onSchemaChange` | Function | Callback function triggered when the schema is updated. |
-| `data`           | Object   | The current JSON schema object.                         |
+- **Visual Tree Builder**: Create deeply nested arrays and objects intuitively without touching raw JSON.
+- **Advanced Validation Controls**: Full support for JSON Schema Draft 07 attributes (e.g., Min/Max values, RegEx Patterns, UniqueItems, and Enums).
+- **Two-way Syncing**: Make changes in the UI and instantly see the clean JSON output.
+- **Import / Export**: 
+  - Import external JSON Data (auto-inference) or existing JSON Schema documents.
+  - Quick paste from the clipboard.
+  - One-click copy or download (`schema.json`).
+- **Modern UI/UX**: Designed for responsiveness, leveraging scalable glassmorphism, resizable panels (`react-resizable-panels`), and toast notifications (`sonner`).
 
 ## Development
 
-### Clone the Repository
-
 ```bash
-git clone https://github.com/angkasa27/json-schema-editor.git
-cd json-schema-editor
+# Install dependencies
+pnpm install
+
+# Start the development server
+pnpm run dev
 ```
 
-### Install Dependencies
+Visit [http://localhost:3000](http://localhost:3000) to start editing.
+
+## File Structure Highlights
+
+- `src/app/page.tsx` - Main layout supporting responsive stacked/resizable split views.
+- `src/components/schema-editor` - Core editor components containing recursive `SchemaItem` arrays and advanced settings forms.
+- `src/lib/schema/store.ts` - Centralized Zustand schema state.
+- `src/lib/schema/validation.ts` - Recursive Zod 4 JSON Schema validation.
+- `src/lib/schema/utils.ts` - Broad utilities for inferring schemas and processing recursive references.
+
+## Building for Production
+
+Compile a static or optimized bundle of the application using Turbopack:
 
 ```bash
-npm install
+pnpm run build
+pnpm start
 ```
-
-### Start Development Server
-
-```bash
-npm start
-```
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-## Contributing
-
-Contributions are welcome! Feel free to submit issues, feature requests, or pull requests.
-
----
-
-## License
-
-This project is licensed under the MIT License.
-
----
-
-If you have any questions or need further clarification, feel free to reach out!
