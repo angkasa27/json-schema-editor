@@ -5,6 +5,7 @@ import { STRING_FORMATS, debounce } from "@/lib/schema/utils";
 import { JSONSchema7Schema } from "@/lib/schema/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { InputNumber } from "@/components/ui/input-number";
 import { useFieldArray, useForm, useFormContext } from "react-hook-form";
@@ -119,6 +120,47 @@ export function DialogAdvancedSettings({
                   onSubmit(data as Record<string, unknown>)
                 )}
               >
+                {/* General metadata */}
+                <div className="col-span-2 space-y-4 mb-2">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItemWrapper label="Title">
+                        <Input
+                          className="w-full"
+                          placeholder="Enter field title"
+                          disabled={field.disabled}
+                          name={field.name}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                          value={(field.value as string) || ""}
+                        />
+                      </FormItemWrapper>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItemWrapper label="Description">
+                        <Textarea
+                          className="w-full resize-none"
+                          rows={3}
+                          placeholder="Enter field description"
+                          disabled={field.disabled}
+                          name={field.name}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                          value={(field.value as string) || ""}
+                        />
+                      </FormItemWrapper>
+                    )}
+                  />
+                </div>
+
                 {/* Default value */}
                 {(isString || isNumber || isInteger || isBoolean) && (
                   <div className="col-span-2">
