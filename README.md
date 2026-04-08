@@ -45,10 +45,19 @@ Visit [http://localhost:3000](http://localhost:3000) to start editing.
 ## File Structure Highlights
 
 - `src/app/page.tsx` - Main layout supporting responsive stacked/resizable split views.
-- `src/components/schema-editor` - Core editor components containing recursive `SchemaItem` arrays and advanced settings forms.
+- `src/components/schema-editor/schema-tree/` - Core recursive editor components handling tree traversal, row states, and user actions.
+- `src/components/schema-editor/advanced-settings/` - Modular tabbed interfaces to manage type-specific JSON Schema constraints.
 - `src/lib/schema/store.ts` - Centralized Zustand schema state.
 - `src/lib/schema/validation.ts` - Recursive Zod 4 JSON Schema validation.
 - `src/lib/schema/utils.ts` - Broad utilities for inferring schemas and processing recursive references.
+
+## Testing
+
+This project utilizes `vitest` for reliable, fast unit testing of schema parsers and utility functions.
+
+```bash
+pnpm test
+```
 
 ## Building for Production
 
