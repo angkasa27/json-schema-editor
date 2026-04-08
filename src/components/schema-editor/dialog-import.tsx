@@ -68,7 +68,7 @@ export function DialogImport({ open, onClose, onSubmit }: DialogImportProps) {
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
-      <DialogContent className="md:max-w-screen-md">
+      <DialogContent className="md:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Import</DialogTitle>
         </DialogHeader>
