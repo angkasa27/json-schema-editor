@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { STRING_FORMATS, debounce } from "@/lib/schema/utils";
 import { JSONSchema7Schema } from "@/lib/schema/validation";
 import { Button } from "@/components/ui/button";
@@ -60,15 +60,15 @@ export function DialogAdvancedSettings({
   const [formSchema, setFormSchema] = useState<Record<string, unknown>>();
 
   const schemaType = schema?.type as string;
-  const isObject = schemaType === "object";
   const isArray = schemaType === "array";
   const isNumber = schemaType === "number";
   const isBoolean = schemaType === "boolean";
   const isInteger = schemaType === "integer";
   const isString = schemaType === "string";
 
-  const form = useForm<Record<string, any>>({
-    resolver: zodResolver(JSONSchema7Schema as any) as any,
+  const form = useForm<import("@/lib/schema/types").JSONSchema7>({
+    // @ts-expect-error - ZodResolver mismatch
+    resolver: zodResolver(JSONSchema7Schema),
     defaultValues: {},
   });
 
@@ -101,7 +101,7 @@ export function DialogAdvancedSettings({
 
   return (
     <Dialog open={open} onOpenChange={() => onClose()}>
-      <DialogContent className="md:max-w-screen-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="md:max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Advanced Settings</DialogTitle>
         </DialogHeader>
@@ -132,7 +132,12 @@ export function DialogAdvancedSettings({
                               <Input
                                 className="w-full"
                                 placeholder="Enter default value"
-                                {...field}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
+                                ref={field.ref}
+                                disabled={field.disabled}
+                                value={(field.value ?? "") as string | number | readonly string[]}
                               />
                             </FormItemWrapper>
                           )}

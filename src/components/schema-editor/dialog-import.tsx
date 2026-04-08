@@ -94,7 +94,7 @@ export function DialogImport({ open, onClose, onSubmit }: DialogImportProps) {
                 const text = await navigator.clipboard.readText();
                 setImportValue(text);
                 toast.success("Pasted from clipboard");
-              } catch (err) {
+              } catch {
                 toast.error("Failed to read from clipboard");
               }
             }}

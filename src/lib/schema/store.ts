@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { JSONSchema7, JSONSchema7TypeName } from "./types";
+import type { JSONSchema7 } from "./types";
 import { DEFAULT_JSON_SCHEMA, getDefaultSchema, inferSchema } from "./utils";
 
 // =============================================================================
@@ -91,13 +91,12 @@ export const useSchemaStore = create<SchemaEditorState>((set, get) => ({
     }
 
     const clone = structuredClone(schema);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let current: any = clone;
+    let current = clone as Record<string, unknown>;
 
     for (let i = 0; i < namePath.length - 1; i++) {
       const key = Object.keys(current)[namePath[i]];
       if (!current[key]) current[key] = {};
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
 
     const lastKey = namePath[namePath.length - 1];
@@ -117,10 +116,8 @@ export const useSchemaStore = create<SchemaEditorState>((set, get) => ({
   renameProperty: (path, newKey) => {
     const { schema } = get();
     const clone = structuredClone(schema);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let current: any = clone;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let parent: any = null;
+    let current = clone as Record<string, unknown>;
+    let parent: Record<string, unknown> | null = null;
     let parentKey: string = "";
 
     for (let i = 0; i < path.length - 1; i++) {
@@ -134,7 +131,7 @@ export const useSchemaStore = create<SchemaEditorState>((set, get) => ({
 
       parent = current;
       parentKey = keys[index];
-      current = current[parentKey];
+      current = current[parentKey] as Record<string, unknown>;
     }
 
     const oldKeyIndex = path[path.length - 1];
@@ -147,7 +144,7 @@ export const useSchemaStore = create<SchemaEditorState>((set, get) => ({
       return false;
     }
 
-    if (Object.prototype.hasOwnProperty.call(current, oldKey)) {
+    if (Object.prototype.hasOwnProperty.call(current, oldKey) && parent !== null) {
       parent[parentKey] = Object.fromEntries(
         Object.entries(current).map(([key, value]) =>
           key === oldKey ? [newKey, value] : [key, value]
@@ -162,20 +159,19 @@ export const useSchemaStore = create<SchemaEditorState>((set, get) => ({
   removeProperty: (path) => {
     const { schema } = get();
     const clone = structuredClone(schema);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let current: any = clone;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let pre: any = clone;
+    let current = clone as Record<string, unknown> | undefined | null;
+    let pre = clone as Record<string, unknown>;
 
     for (let i = 0; i < path.length - 1; i++) {
       if (current !== undefined && current !== null) {
         pre = current;
-        current = current[Object.keys(current)[path[i]]];
+        current = current[Object.keys(current)[path[i]]] as typeof current;
       } else {
         return;
       }
     }
 
+    if (!current) return;
     const finalKey = Object.keys(current)[path[path.length - 1]];
     updateRequired(pre, finalKey, true);
 
@@ -193,19 +189,19 @@ export const useSchemaStore = create<SchemaEditorState>((set, get) => ({
   addProperty: (namePath, isChild) => {
     const { schema, fieldCount } = get();
     const clone = structuredClone(schema);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let current: any = clone;
+    let current = clone as Record<string, unknown>;
 
     for (let i = 0; i < namePath.length - (isChild ? 0 : 1); i++) {
       const key = Object.keys(current)[namePath[i]];
       if (!current[key]) current[key] = {};
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
 
     const newSchema = getDefaultSchema("string");
 
     if (isChild) {
-      current["properties"][`field_${fieldCount}`] = newSchema;
+      if (!current["properties"]) current["properties"] = {};
+      (current["properties"] as Record<string, unknown>)[`field_${fieldCount}`] = newSchema;
     } else {
       current[`field_${fieldCount}`] = newSchema;
     }
@@ -216,8 +212,7 @@ export const useSchemaStore = create<SchemaEditorState>((set, get) => ({
   updateRequiredProperty: (path, requiredProperty, removed) => {
     const { schema } = get();
     const clone = structuredClone(schema);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let current: any = clone;
+    let current = clone as Record<string, unknown>;
 
     for (let i = 0; i < path.length; i++) {
       const index = path[i];
@@ -225,7 +220,7 @@ export const useSchemaStore = create<SchemaEditorState>((set, get) => ({
       if (typeof current[keys[index]] === "undefined") {
         current[keys[index]] = {};
       }
-      current = current[keys[index]];
+      current = current[keys[index]] as Record<string, unknown>;
     }
 
     updateRequired(current, requiredProperty, removed);

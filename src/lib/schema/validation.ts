@@ -29,7 +29,7 @@ const JSONSchema7Definition: z.ZodType<unknown> = z.union([
 ]);
 
 // Main JSON Schema 7 validation schema
-export const JSONSchema7Schema: z.ZodTypeAny = z.object({
+export const JSONSchema7Schema: z.ZodType<JSONSchema7> = z.object({
   $id: z.string().optional(),
   $ref: z.string().optional(),
   $schema: z.string().optional(),
@@ -60,7 +60,7 @@ export const JSONSchema7Schema: z.ZodTypeAny = z.object({
   maxItems: z.number().optional(),
   minItems: z.number().optional(),
   uniqueItems: z.boolean().optional(),
-  contains: z.lazy(() => JSONSchema7Schema as z.ZodTypeAny).optional(),
+  contains: z.lazy(() => JSONSchema7Schema as z.ZodType<unknown>).optional(),
 
   // Section 6.5
   maxProperties: z.number().optional(),
@@ -105,4 +105,4 @@ export const JSONSchema7Schema: z.ZodTypeAny = z.object({
   readOnly: z.boolean().optional(),
   writeOnly: z.boolean().optional(),
   examples: JSONSchema7Type.optional(),
-});
+}) as unknown as z.ZodType<JSONSchema7>;

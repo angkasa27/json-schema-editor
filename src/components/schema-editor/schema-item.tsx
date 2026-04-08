@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import type { JSONSchema7, JSONSchema7TypeName } from "@/lib/schema/types";
 import {
   getDefaultSchema,
@@ -227,30 +227,37 @@ const SchemaItemRow = memo(function SchemaItemRow(props: SchemaItemProps) {
   } = useSchemaStore();
 
   const [schema, setSchema] = useState(props.schema);
+  const [prevSchema, setPrevSchema] = useState(props.schema);
+
   const [propertyName, setPropertyName] = useState(props.propertyName);
+  const [prevPropName, setPrevPropName] = useState(props.propertyName);
+
   const [schemaTitle, setSchemaTitle] = useState(schema.title);
-  const [schemaDescription, setSchemaDescription] = useState(
-    schema.description,
-  );
+  const [prevTitle, setPrevTitle] = useState(schema.title);
+
+  const [schemaDescription, setSchemaDescription] = useState(schema.description);
+  const [prevDesc, setPrevDesc] = useState(schema.description);
+
   const [advancedModal, setAdvancedModal] = useState(false);
 
   const isRoot = typeof propertyName === "undefined";
 
-  useEffect(() => {
+  if (props.schema !== prevSchema) {
+    setPrevSchema(props.schema);
     setSchema(props.schema);
-  }, [props.schema]);
-
-  useEffect(() => {
+  }
+  if (props.propertyName !== prevPropName) {
+    setPrevPropName(props.propertyName);
     setPropertyName(props.propertyName);
-  }, [props.propertyName]);
-
-  useEffect(() => {
+  }
+  if (schema.title !== prevTitle) {
+    setPrevTitle(schema.title);
     setSchemaTitle(schema.title);
-  }, [schema.title]);
-
-  useEffect(() => {
+  }
+  if (schema.description !== prevDesc) {
+    setPrevDesc(schema.description);
     setSchemaDescription(schema.description);
-  }, [schema.description]);
+  }
 
   const addChildItems = useMemo(
     () =>

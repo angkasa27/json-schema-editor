@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { CodeMirrorJson } from "@/components/ui/code-mirror-json";
 import {
   ResizableHandle,
@@ -19,15 +19,13 @@ import { Badge } from "@/components/ui/badge";
 export default function Home() {
   const [jsonSchema, setJsonSchema] =
     useState<JSONSchema7>(DEFAULT_JSON_SCHEMA);
-  const [stringifyJson, setStringifyJson] = useState<string>("");
+  const stringifyJson = useMemo(
+    () => JSON.stringify(jsonSchema || DEFAULT_JSON_SCHEMA, null, 2),
+    [jsonSchema]
+  );
+
   const [importModal, setImportModal] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    setStringifyJson(
-      JSON.stringify(jsonSchema || DEFAULT_JSON_SCHEMA, null, 2)
-    );
-  }, [jsonSchema]);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -52,7 +50,7 @@ export default function Home() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success("Schema exported");
-    } catch (err) {
+    } catch {
       toast.error("Failed to export schema");
     }
   }, [stringifyJson]);
@@ -60,7 +58,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6 py-3 flex items-center justify-between shrink-0">
+      <header className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 px-4 lg:px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Braces className="size-5 text-primary" />
@@ -116,7 +114,6 @@ export default function Home() {
                     className="w-full border-none h-full [&_.cm-editor]:h-full"
                     editable={false}
                     height="100%"
-                    onChange={setStringifyJson}
                   />
                 </div>
               </div>
@@ -164,7 +161,6 @@ export default function Home() {
               className="w-full border-none"
               editable={false}
               height="160px"
-              onChange={setStringifyJson}
             />
           </div>
         </div>
