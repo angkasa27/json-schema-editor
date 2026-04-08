@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import SchemaItem from "./schema-item";
+import { SchemaItemContainer as SchemaItem } from "./schema-tree/index";
 import { useSchemaStore } from "@/lib/schema/store";
 import type { JSONSchema7 } from "@/lib/schema/types";
 
